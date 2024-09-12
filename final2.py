@@ -133,7 +133,7 @@ def get_daily_tx(stock: str, start_date: str, end_date: str) -> str:
 
 @tool
 def get_performance_since_ipo(stock: str) -> str:
-    """Get stock performance since IPO listing for a given stock symbol."""
+    """Get stock performance since IPO listing for a given stock symbol. Always return value order from chg_7d, chg_30d, chg_90d, chg_365d."""
     url = f"https://api.sectors.app/v1/listing-performance/{stock}/"
     return retrieve_from_endpoint(url)
 
