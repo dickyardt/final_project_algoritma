@@ -57,14 +57,14 @@ def retrieve_from_endpoint(url: str) -> dict:
 
 # Tools definition
 @tool
-def get_top_companies_by_tx_volume(start_date: str, end_date: str, top_n: int = 5) -> str:
+def get_top_companies_by_tx_volume(start_date: str, end_date: str = None, top_n: int = 5) -> str:
     """Get top companies by transaction volume for a given date range."""
     max_attempts = 5  # Try up to 5 consecutive days
     original_start_date = start_date
     original_end_date = end_date if end_date else start_date
 
     for attempt in range(max_attempts):
-        url = f"https://api.sectors.app/v1/most-traded/?start={start_date}&end={end_date}&n_stock={top_n}"
+        url = f"https://api.sectors.app/v1/most-traded/?start={start_date}&end={original_end_date}&n_stock={top_n}"
         data = retrieve_from_endpoint(url)
         
         if isinstance(data, dict) and 'error' in data:
