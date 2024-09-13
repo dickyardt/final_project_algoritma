@@ -58,7 +58,7 @@ def retrieve_from_endpoint(url: str) -> dict:
 # Tools definition
 @tool
 def get_top_companies_by_tx_volume(start_date: str, end_date: str = None, top_n: int = 5) -> str:
-    """Get top companies by transaction volume for a given date range."""
+    """Get top companies by transaction volume for a given date range. If there is no end date, use start date as end date"""
     max_attempts = 5  # Try up to 5 consecutive days
     original_start_date = start_date
     original_end_date = end_date if end_date else start_date
