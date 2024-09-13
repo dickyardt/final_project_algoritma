@@ -31,12 +31,6 @@ def get_today_date():
     today = date.today()
     return today.strftime("%Y-%m-%d")
 
-#Function to get first day of this year
-def get_start_of_year():
-    today = date.today()
-    start_of_year = date(today.year, 1, 1)
-    return start_of_year.strftime("%Y-%m-%d")
-
 # Function to retrieve data from the API endpoint with improved error handling
 def retrieve_from_endpoint(url: str) -> dict:
     headers = {"Authorization": SECTORS_API_KEY}
