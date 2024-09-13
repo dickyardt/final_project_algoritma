@@ -174,6 +174,7 @@ prompt = ChatPromptTemplate.from_messages([
     For question related to IDX or index use tool get_index.
     For question related to company comparison do not use tool get_index, use tool get_company_overview.
     For question related to close price use tool get_daily_tx, if date is null then use today's date.
+    For tools get_top_companies_by_tx_volume if there is no end date, use start date as end date.
 
     Always answer in markdown table if necessary and possible.
     """),
