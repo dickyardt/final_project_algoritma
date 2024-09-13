@@ -64,19 +64,15 @@ def get_top_companies_by_tx_volume(start_date: str, end_date: str = None, top_n:
     original_end_date = end_date if end_date else start_date
 
     for attempt in range(max_attempts):
-        # Construct URL, handling the case where end_date is None
-        url = f"https://api.sectors.app/v1/most-traded/?start={start_date}&n_stock={top_n}"
-        if end_date:
-            url += f"&end={end_date}"
-        
+        url = f"https://api.sectors.app/v1/most-traded/?start={start_date}&end={end_date}&n_stock={top_n}"
         data = retrieve_from_endpoint(url)
-        
+
         if isinstance(data, dict) and 'error' in data:
             return json.dumps(data)
-        
+
         # Parse the JSON string back into a dictionary
         data_dict = json.loads(data)
-        
+
         if data_dict:  # If we have data, process it
             # Aggregate volume across all dates
             aggregated_data = {}
@@ -88,35 +84,35 @@ def get_top_companies_by_tx_volume(start_date: str, end_date: str = None, top_n:
                         aggregated_data[symbol]['volume'] += volume
                     else:
                         aggregated_data[symbol] = company.copy()
-            
+
             # Sort by total volume and get top N
             sorted_data = sorted(aggregated_data.values(), key=lambda x: x['volume'], reverse=True)[:top_n]
-            
+
             return json.dumps({
                 "data": sorted_data,
                 "original_start_date": original_start_date,
                 "original_end_date": original_end_date,
                 "actual_start_date": start_date,
-                "actual_end_date": end_date if end_date else start_date,
-                "is_original_date_range": original_start_date == start_date and original_end_date == (end_date if end_date else start_date),
+                "actual_end_date": end_date,
+                "is_original_date_range": original_start_date == start_date and original_end_date == end_date,
                 "attempts": attempt + 1
             })
-        
+
         # If no data, try the next day
         start_date = (datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
         if end_date:
             end_date = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
         else:
             end_date = start_date
-    
+
     return json.dumps({
         "error": "No data available for the specified date range and subsequent attempts.",
         "original_start_date": original_start_date,
         "original_end_date": original_end_date,
         "last_checked_start_date": start_date,
-        "last_checked_end_date": end_date if end_date else start_date
+        "last_checked_end_date": end_date
     })
-
+    
 @tool
 def get_company_overview(stock: str) -> str:
     """Get company overview for a given stock symbol."""
@@ -164,11 +160,14 @@ prompt = ChatPromptTemplate.from_messages([
     and use the get_top_companies_by_tx_volume tool to retrieve this information.
 
     When using the get_top_companies_by_tx_volume tool:
-    1. Always check the 'is_original_date' field in the response.
-    2. If 'is_original_date' is false, this means the original requested date was a non-trading day.
-    3. In this case, you MUST start your response by explaining that the original date was a non-trading day, and specify both the original requested date and the actual date for which data was found.
-    4. Use the 'original_date' and 'actual_date' fields from the response to provide this information.
-    5. After explaining the date situation, proceed to list the top companies as usual.
+    1. Always check the 'is_original_date_range' field in the response.
+    2. If 'is_original_date_range' is false, this means at least one of the original requested dates was a non-trading day.
+    3. In this case, you MUST start your response by explaining the situation:
+       - Clearly state that the original date(s) requested were non-trading days.
+       - Specify both the original requested date range and the actual date range for which data was found.
+       - Use the 'original_start_date', 'original_end_date', 'actual_start_date', and 'actual_end_date' fields from the response to provide this information.
+    4. After explaining the date situation, proceed to list the top companies as usual.
+    5. If only one day was shifted, mention specifically which date (start or end) was adjusted.
 
     If the tool returns an error message indicating no data is available, communicate this clearly to the user, mentioning both the original requested date and the last date checked.
 
